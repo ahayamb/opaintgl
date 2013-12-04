@@ -17,6 +17,7 @@
 11 : Brush (b)
 */
 //Komen baru
+// baru lagi
 
 vector<dot> Dots;
 
