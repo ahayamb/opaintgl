@@ -16,6 +16,7 @@
 10 : Erase (e)
 11 : Brush (b)
 */
+//Komen baru
 
 vector<dot> Dots;
 
