@@ -1,0 +1,21 @@
+# depslib dependency file v1.0
+1386125907 source:d:\#kuliah\semester v\grafika komputer\tugas\opaintgl\main.cpp
+	<windows.h>
+	<string.h>
+	"Objlib.h"
+
+1386125746 d:\#kuliah\semester v\grafika komputer\tugas\opaintgl\objlib.h
+	<GL\gl.h>
+	<GL\glut.h>
+	<stdio.h>
+	<math.h>
+	<vector>
+	"ObjCanvas.h"
+
+1386120468 d:\#kuliah\semester v\grafika komputer\tugas\opaintgl\objcanvas.h
+	<stdio.h>
+	<math.h>
+	<vector>
+	<GL\gl.h>
+	<GL\glut.h>
+
