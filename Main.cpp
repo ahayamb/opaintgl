@@ -16,17 +16,114 @@
 10 : Erase (e)
 11 : Brush (b)
 */
-//Komen baru
-// baru lagi
 
 vector<dot> Dots;
 
-int W = 800, H = 600, toolSize = 20;
+int W = 800, H = 600, toolSize = 20, tcurrentIdx = -1;
 Obj *t, *tcurrent;
 vector<Obj*> Objs;
 Canvas *workspace;
 bool flagTool[20];
 int Xinit, Yinit;
+float r = 0, g = 0, b = 0;
+
+//--------------------------------------------------Associated Property/Function of Color Picker-------------------------------
+void init_ColorPicker(void)
+{
+	glClearColor( 1, 1, 1, 1);
+	glClearDepth( 1.0 );
+	gluOrtho2D(0, 290, -20, 260);
+}
+
+void text()
+{
+	char text[32];
+	glColor3f(0,0,0);
+	int R = (int)(r * 255);
+	int G = (int)(g * 255);
+	int B = (int)(b * 255);
+	sprintf(text, "R : %d G : %d B : %d", R, G, B);
+	glRasterPos2f(0, -13);
+	for(int i = 0; text[i] != '\0'; i++)
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, text[i]);
+}
+
+void ColorPicker()
+{
+	glClear(GL_COLOR_BUFFER_BIT);
+	glPointSize(1.0);
+	for (float i = 0; i < 256; i += 1.0)
+		for (float j = 0; j < 256; j += 0.1)
+		{
+			glColor3f(r, i / 255, j / 255);
+			glBegin(GL_POINTS);
+			glVertex2f(i, j);
+			glEnd();
+		}
+	glBegin(GL_POLYGON);
+	glColor3f(0, 0, 0);
+	glVertex2f(285, 0);
+	glVertex2f(261, 0);
+	glColor3f(1, 0, 0);
+	glVertex2f(261, 255);
+	glVertex2f(285, 255);
+	glEnd();
+	glPointSize(10.0);
+	glColor3f(r, g, b);
+	glBegin(GL_POINTS);
+	glVertex2f(250, -9);
+	glEnd();
+	text();
+	glFlush();
+}
+
+void MouseFunc_ColorPicker(int button, int state, int x, int y)
+{
+	if (state == GLUT_DOWN)
+	{
+		if (x > 256 && 256 - y >= 0)
+		{
+			r = (float)(256 - y) / 255;
+			glutPostRedisplay();
+		}
+		else if (x >= 0 && 256 - y >= 0)
+		{
+			g = (float)(x) / 255;
+			b = (float)(256 - y) / 255;
+			glutPostRedisplay();
+		}
+	}
+}
+//-----------------------------------------------------------------------------------------------------------------------------
+
+void ToolInformationBar()
+{
+	glColor3f(0.1, 1, 1);
+	glBegin(GL_POLYGON);
+	glVertex2i(0, 600);
+	glVertex2i(800, 600);
+	glVertex2i(800, 630);
+	glVertex2i(0, 630);
+	glEnd();
+	glColor3f(0,0,0);
+	char text[200];
+	if (flagTool[1]) sprintf(text, "CURVE Selected | Curve(C), Select & Move (s), Resize(z), Rotate(r), Round(X), Square(S), Polyside(G), Freehand(F), Fill(f), Erase(e), Brush(b), Rasterize(q)");
+	else if (flagTool[2]) sprintf(text, "SELECT Selected | Curve(C), Select & Move (s), Resize(z), Rotate(r), Round(X), Square(S), Polyside(G), Freehand(F), Fill(f), Erase(e), Brush(b), Rasterize(q)");
+	else if (flagTool[3]) sprintf(text, "RESIZE Selected | Curve(C), Select & Move (s), Resize(z), Rotate(r), Round(X), Square(S), Polyside(G), Freehand(F), Fill(f), Erase(e), Brush(b), Rasterize(q)");
+	else if (flagTool[4]) sprintf(text, "ROTATE Selected | Curve(C), Select & Move (s), Resize(z), Rotate(r), Round(X), Square(S), Polyside(G), Freehand(F), Fill(f), Erase(e), Brush(b), Rasterize(q)");
+	else if (flagTool[5]) sprintf(text, "ROUND Selected | Curve(C), Select & Move (s), Resize(z), Rotate(r), Round(X), Square(S), Polyside(G), Freehand(F), Fill(f), Erase(e), Brush(b), Rasterize(q)");
+	else if (flagTool[6]) sprintf(text, "SQUARE Selected | Curve(C), Select & Move (s), Resize(z), Rotate(r), Round(X), Square(S), Polyside(G), Freehand(F), Fill(f), Erase(e), Brush(b), Rasterize(q)");
+	else if (flagTool[7]) sprintf(text, "POLYSIDE Selected | Curve(C), Select & Move (s), Resize(z), Rotate(r), Round(X), Square(S), Polyside(G), Freehand(F), Fill(f), Erase(e), Brush(b), Rasterize(q)");
+	else if (flagTool[8]) sprintf(text, "FREEHAND Selected | Curve(C), Select & Move (s), Resize(z), Rotate(r), Round(X), Square(S), Polyside(G), Freehand(F), Fill(f), Erase(e), Brush(b), Rasterize(q)");
+	else if (flagTool[9]) sprintf(text, "FILL Selected | Curve(C), Select & Move (s), Resize(z), Rotate(r), Round(X), Square(S), Polyside(G), Freehand(F), Fill(f), Erase(e), Brush(b), Rasterize(q)");
+	else if (flagTool[10]) sprintf(text, "ERASE Selected | Curve(C), Select & Move (s), Resize(z), Rotate(r), Round(X), Square(S), Polyside(G), Freehand(F), Fill(f), Erase(e), Brush(b), Rasterize(q)");
+	else if (flagTool[11]) sprintf(text, "BRUSH Selected | Curve(C), Select & Move (s), Resize(z), Rotate(r), Round(X), Square(S), Polyside(G), Freehand(F), Fill(f), Erase(e), Brush(b), Rasterize(q)");
+
+	glColor3f(0,0,0);
+	glRasterPos2f(0, 605);
+	for(int i = 0; text[i] != '\0'; i++)
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, text[i]);
+}
 
 void resetFlag(int idx)
 {
@@ -36,12 +133,14 @@ void resetFlag(int idx)
 void init(int W, int H)
 {
 	glClearColor(1, 1, 1, 1);
-	gluOrtho2D(0, W, 0, H);
+	gluOrtho2D(0, W, 0, H + 30);
 }
 
 void DisplayFunc()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
+
+	ToolInformationBar();
 
 	if (workspace != NULL) workspace->DrawToScreen();
 
@@ -58,15 +157,15 @@ void MouseFunc(int button, int state, int x, int y)
 	{
 		flagTool[0] = true;
 		Xinit = x;
-		Yinit = (600 - y);
+		Yinit = (600 - y + 30);
 		if (flagTool[1])
 		{
 			if (t->isFinished())
 			{
 				Objs.push_back(t);
-				t = new Curve();
+				t = new Curve(r, g, b);
 			}
-			t->AddPoint((float)x, (float)(600 - y));
+			t->AddPoint((float)x, (float)(600 - y + 30));
 			t->AddPoint((float)Xinit, (float)Yinit);
 			t->Evaluate();
 		}
@@ -74,10 +173,11 @@ void MouseFunc(int button, int state, int x, int y)
 		{
 			for (int i = 0; i < Objs.size(); i++)
 			{
-				Objs[i]->CheckSelect((float)x, (float)(600 - y));
+				Objs[i]->CheckSelect((float)x, (float)(600 - y + 30));
 				if (Objs[i]->Selected)
 				{
 					tcurrent = Objs[i];
+					tcurrentIdx = i;
 					for (int j = i + 1; j < Objs.size(); j++) Objs[j]->Selected = false;
 					break;
 				}
@@ -87,11 +187,11 @@ void MouseFunc(int button, int state, int x, int y)
 		}
 		else if (flagTool[3])
 		{
-			if(tcurrent != NULL) tcurrent->EvaluatingResize((float)x, (float)(600 - y));
+			if(tcurrent != NULL) tcurrent->EvaluatingResize((float)x, (float)(600 - y + 30));
 		}
 		else if (flagTool[4])
 		{
-			if(tcurrent != NULL) tcurrent->EvaluatingResize((float)x, (float)(600 - y));
+			if(tcurrent != NULL) tcurrent->EvaluatingResize((float)x, (float)(600 - y + 30));
 		}
 		else if (flagTool[5])
 		{
@@ -99,7 +199,7 @@ void MouseFunc(int button, int state, int x, int y)
 			{
 				t->Selected = false;
 				Objs.push_back(t);
-				t = new Round();
+				t = new Round(r, g, b);
 			}
 		}
 		else if (flagTool[6])
@@ -108,7 +208,7 @@ void MouseFunc(int button, int state, int x, int y)
 			{
 				t->Selected = false;
 				Objs.push_back(t);
-				t = new Square();
+				t = new Square(r, g, b);
 			}
 		}
 		else if (flagTool[7])
@@ -117,7 +217,7 @@ void MouseFunc(int button, int state, int x, int y)
 			{
 				t->Selected = false;
 				Objs.push_back(t);
-				t = new Polyside();
+				t = new Polyside(r, g, b);
 			}
 		}
 		else if (flagTool[8])
@@ -126,20 +226,22 @@ void MouseFunc(int button, int state, int x, int y)
 			{
 				t->Selected = false;
 				Objs.push_back(t);
-				t = new Freehand();
+				t = new Freehand(r, g, b);
 			}
 		}
 		else if (flagTool[9])
 		{
-			float t[3] = {0.92,0.12,0.12};
-			workspace->fillAt(x, y, t);
+			float t[3];
+			t[0] = r; t[1] = g; t[2] = b;
+			workspace->fillAt(x, y - 30, t);
 		}
-		else if (flagTool[10]) workspace->eraseAt(x, 600 - y, toolSize);
+		else if (flagTool[10]) workspace->eraseAt(x, 600 - y + 30, toolSize);
 		else if (flagTool[11])
 		{
-			float t[3] = {1, 1, 0};
+			float t[3];
+			t[0] = r; t[1] = g; t[2] = b;
 			for (int i = 0; i < 2 * toolSize; i++)
-				workspace->setPixelAt(rand() % toolSize + x - toolSize / 2, rand() % toolSize + 600 - y - toolSize / 2, t);
+				workspace->setPixelAt(rand() % toolSize + x - toolSize / 2, rand() % toolSize + 600 - y + 30 - toolSize / 2, t);
 		}
 	}
 	else if (state == GLUT_UP && button == GLUT_LEFT_BUTTON)
@@ -156,16 +258,16 @@ void MouseMoveFunc(int x, int y)
 	{
 		if (flagTool[1])
 		{
-			t->EditLastPoint(x, 600 - y);
+			t->EditLastPoint(x, 600 - y + 30);
 			glutPostRedisplay();
 		}
 		else if (flagTool[2])
 		{
 			if (tcurrent != NULL)
 			{
-				tcurrent->Translate(x - Xinit, 600 - y - Yinit);
+				tcurrent->Translate(x - Xinit, 600 - y + 30 - Yinit);
 				Xinit = x;
-				Yinit = 600 - y;
+				Yinit = 600 - y + 30;
 				glutPostRedisplay();
 			}
 		}
@@ -173,7 +275,7 @@ void MouseMoveFunc(int x, int y)
 		{
 			if (tcurrent != NULL && tcurrent->isResizing())
 			{
-				tcurrent->Resize((float)x, (float)(600 - y));
+				tcurrent->Resize((float)x, (float)(600 - y + 30));
 				glutPostRedisplay();
 			}
 		}
@@ -183,7 +285,7 @@ void MouseMoveFunc(int x, int y)
 			{
 				if (tcurrent->isResizing())
 				{
-					y = 600 - y;
+					y = 600 - y + 30;
 					float direction = 0, angle;
 					float dx1 = Xinit - tcurrent->GetCenterX();
 					float dx2 = x - tcurrent->GetCenterX();
@@ -204,37 +306,38 @@ void MouseMoveFunc(int x, int y)
 		}
 		else if (flagTool[5])
 		{
-			if (Xinit != x && 600 - y != Yinit)
-				t->SetInitialPoint(Xinit, Yinit, x, 600 - y);
+			if (Xinit != x && 600 - y + 30 != Yinit)
+				t->SetInitialPoint(Xinit, Yinit, x, 600 - y + 30);
 			glutPostRedisplay();
 		}
 		else if (flagTool[6])
 		{
-			if (Xinit != x && 600 - y != Yinit)
-				t->SetInitialPoint(Xinit, Yinit, x, 600 - y);
+			if (Xinit != x && 600 - y + 30 != Yinit)
+				t->SetInitialPoint(Xinit, Yinit, x, 600 - y + 30);
 			glutPostRedisplay();
 		}
 		else if (flagTool[7])
 		{
-			if (Xinit != x && 600 - y != Yinit)
-				t->SetInitialPoint(Xinit, Yinit, x, 600 - y);
+			if (Xinit != x && 600 - y + 30 != Yinit)
+				t->SetInitialPoint(Xinit, Yinit, x, 600 - y + 30);
 			glutPostRedisplay();
 		}
 		else if (flagTool[8])
 		{
-			t->AddPoint(x, 600 - y);
+			t->AddPoint(x, 600 - y + 30);
 			glutPostRedisplay();
 		}
 		else if (flagTool[10])
 		{
-			workspace->eraseAt(x, 600 - y, toolSize);
+			workspace->eraseAt(x, 600 - y + 30, toolSize);
 			glutPostRedisplay();
 		}
 		else if (flagTool[11])
 		{
-			float t[3] = {1, 1, 0};
+			float t[3];
+			t[0] = r; t[1] = g; t[2] = b;
 			for (int i = 0; i < 2 * toolSize; i++)
-				workspace->setPixelAt(rand() % toolSize + x - toolSize / 2, rand() % toolSize + 600 - y - toolSize / 2, t);
+				workspace->setPixelAt(rand() % toolSize + x - toolSize / 2, rand() % toolSize + 600 - y + 30 - toolSize / 2, t);
 			glutPostRedisplay();
 		}
 	}
@@ -250,7 +353,7 @@ void KeyboardFunc(unsigned char key, int x, int y)
 			t->Selected = false;
 			Objs.push_back(t);
 		}
-		t = new Curve();
+		t = new Curve(r, g, b);
 	}
 	else if (key == 's')
 	{
@@ -296,7 +399,8 @@ void KeyboardFunc(unsigned char key, int x, int y)
 			t->Selected = false;
 			Objs.push_back(t);
 		}
-		t = new Round();
+		t = new Round(r, g, b);
+		glutPostRedisplay();
 	}
 	else if (key == 'S')
 	{
@@ -306,7 +410,8 @@ void KeyboardFunc(unsigned char key, int x, int y)
 			t->Selected = false;
 			Objs.push_back(t);
 		}
-		t = new Square();
+		t = new Square(r, g, b);
+		glutPostRedisplay();
 	}
 	else if (key == 'G')
 	{
@@ -316,7 +421,8 @@ void KeyboardFunc(unsigned char key, int x, int y)
 			t->Selected = false;
 			Objs.push_back(t);
 		}
-		t = new Polyside();
+		t = new Polyside(r, g, b);
+		glutPostRedisplay();
 	}
 	else if (key == 'F')
 	{
@@ -326,25 +432,29 @@ void KeyboardFunc(unsigned char key, int x, int y)
 			t->Selected = false;
 			Objs.push_back(t);
 		}
-		t = new Freehand();
+		t = new Freehand(r, g, b);
+		glutPostRedisplay();
 	}
 	else if (key == 'f')
 	{
 		resetFlag(9);
 		if (t != NULL) Objs.push_back(t);
 		if(tcurrent != NULL) tcurrent->Selected = true;
+		glutPostRedisplay();
 	}
 	else if (key == 'e')
 	{
 		resetFlag(10);
 		if (t != NULL) Objs.push_back(t);
 		if(tcurrent != NULL) tcurrent->Selected = true;
+		glutPostRedisplay();
 	}
 	else if (key == 'b')
 	{
 		resetFlag(11);
 		if (t != NULL) Objs.push_back(t);
 		if(tcurrent != NULL) tcurrent->Selected = true;
+		glutPostRedisplay();
 	}
 	else if (key == 'q')
 	{
@@ -355,6 +465,7 @@ void KeyboardFunc(unsigned char key, int x, int y)
 		else if (t != NULL)
 		{
 			t->Rasterize(workspace);
+			t = NULL;
 		}
 		glutPostRedisplay();
 	}
@@ -386,7 +497,7 @@ int main(int argc, char **argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA);
 	glutInitWindowPosition(80, 80);
-	glutInitWindowSize(W, H);
+	glutInitWindowSize(W, H + 30);
 	float t[3] = {1,1,1};
 	workspace = new Canvas(H, W);
 	for (int i = 0; i < W; i++)
@@ -399,6 +510,16 @@ int main(int argc, char **argv)
 	glutMouseFunc(MouseFunc);
 	glutMotionFunc(MouseMoveFunc);
 	glutKeyboardFunc(KeyboardFunc);
+
+	//Displaying Color Picker
+	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA);
+	glutInitWindowPosition(100 + W, 80);
+	glutInitWindowSize(290, 276);
+	glutCreateWindow("Color Picker::Ongisnade 1.0");
+	init_ColorPicker();
+	glutDisplayFunc(ColorPicker);
+	glutMouseFunc(MouseFunc_ColorPicker);
+
 	glutMainLoop();
 }
 
