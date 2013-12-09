@@ -204,9 +204,11 @@ public:
 class Square : public Obj
 {
 public:
-	Square()
+	Square(float r, float g, float b)
 	{
-		color[0] = color[1] = color[2] = 0;
+		color[0] = r;
+		color[1] = g;
+		color[2] = b;
 		ori.clear();
 		mod.clear();
 		Selected = true;
@@ -267,9 +269,11 @@ private:
 class Round : public Obj
 {
 public:
-	Round()
+	Round(float r, float g, float b)
 	{
-		color[0] = color[1] = color[2] = 0;
+		color[0] = r;
+		color[1] = g;
+		color[2] = b;
 		ori.clear();
 		mod.clear();
 		Selected = true;
@@ -325,9 +329,11 @@ private:
 class Polyside : public Obj
 {
 public:
-	Polyside()
+	Polyside(float r, float g, float b)
 	{
-		color[0] = color[1] = color[2] = 0;
+		color[0] = r;
+		color[1] = g;
+		color[2] = b;
 		ori.clear();
 		mod.clear();
 		Selected = true;
@@ -417,9 +423,11 @@ private:
 class Freehand : public Obj
 {
 public:
-	Freehand()
+	Freehand(float r, float g, float b)
 	{
-		color[0] = color[1] = color[2] = 0;
+		color[0] = r;
+		color[1] = g;
+		color[2] = b;
 		ori.clear();
 		mod.clear();
 		Selected = true;
@@ -481,9 +489,11 @@ class Curve : public Obj
 {
 public:
 	bool Selected;
-	Curve()
+	Curve(float r, float g, float b)
 	{
-		color[0] = color[1] = color[2] = 0;
+		color[0] = r;
+		color[1] = g;
+		color[2] = b;
 		ori.clear();
 		mod.clear();
 		Selected = true;
