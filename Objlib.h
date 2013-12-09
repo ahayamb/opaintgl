@@ -6,12 +6,18 @@
 #include "ObjCanvas.h"
 using namespace std;
 
-//typedef struct aaa { float X, Y; }
-//		dot;
-
 //---------------------------------------------------------------------OBJ-------------------------------------------------------------------//
 class Obj
 {
+protected:
+	virtual void InitMod(){ }
+	vector<dot> ori, mod;
+	float xmax, xmin, ymax, ymin;
+	float color[3];
+	bool Finished, isRound;
+	int ResizePoint;
+	float pointSize;
+
 public:
 	bool Selected;
 	float Side;
@@ -190,14 +196,7 @@ public:
 	}
 	bool isFinished() { return Finished; }
 	int isResizing() { return ResizePoint; }
-protected:
-	virtual void InitMod(){ }
-	vector<dot> ori, mod;
-	float xmax, xmin, ymax, ymin;
-	float color[3];
-	bool Finished, isRound;
-	int ResizePoint;
-	float pointSize;
+
 };
 
 
