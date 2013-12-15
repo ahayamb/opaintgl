@@ -417,6 +417,7 @@ private:
 			}
 			t += 0.01;
 		}
+		printf("%d\n", mod.size());
 	}
 };
 
@@ -466,9 +467,11 @@ private:
 		dot pa;
 		xmax = ymax = -1;
 		xmin = ymin = 1000;
-		while (t <= 1.0)
+
+		for (int i = 0; i < ori.size() - 1; i++)
 		{
-			for (int i = 0; i < ori.size() - 1; i += 1)
+			float d = sqrtf(pow((ori[i].X - ori[i + 1].X), 2) + pow((ori[i].Y - ori[i + 1].Y), 2));
+			while(t <= 1.0)
 			{
 				pa.X = (1.0 - t) * ori[i].X + t * ori[i + 1].X;
 				pa.Y = (1.0 - t) * ori[i].Y + t * ori[i + 1].Y;
@@ -479,9 +482,14 @@ private:
 				ymin = ymin > pa.Y ? pa.Y : ymin;
 
 				mod.push_back(pa);
+
+				if (d < 150) t += 0.01;
+				else t += 0.001;
 			}
-			t += 0.01;
+			t = 0;
 		}
+
+		printf("free %d\n", mod.size());
 	}
 };
 

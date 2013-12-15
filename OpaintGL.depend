@@ -19,11 +19,11 @@
 	<GL\gl.h>
 	<GL\glut.h>
 
-1387115846 source:d:\source code\opaintgl\main.cpp
+1387136960 source:d:\source code\opaintgl\main.cpp
 	<windows.h>
 	"Objlib.h"
 
-1387084134 d:\source code\opaintgl\objlib.h
+1387137885 d:\source code\opaintgl\objlib.h
 	<GL\gl.h>
 	<GL\glut.h>
 	<stdio.h>
@@ -31,7 +31,7 @@
 	<vector>
 	"ObjCanvas.h"
 
-1387084134 d:\source code\opaintgl\objcanvas.h
+1387136960 d:\source code\opaintgl\objcanvas.h
 	<stdio.h>
 	<math.h>
 	<vector>
