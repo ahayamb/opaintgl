@@ -546,7 +546,7 @@ int main(int argc, char **argv)
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA);
 	glutInitWindowPosition(100 + W, 80);
 	glutInitWindowSize(290, 276);
-	glutCreateWindow("Color Picker::Ongisnade 1.0");
+	glutCreateWindow("Color Picker::OpaintGL - Ongisnade 1.1");
 	init_ColorPicker();
 	glutDisplayFunc(ColorPicker);
 	glutMouseFunc(MouseFunc_ColorPicker);
@@ -560,7 +560,7 @@ int main(int argc, char **argv)
 		for (int j = 0; j < H; j++)
 			workspace->setPixelAt(i, j, aa);
 	workspace->Modified = true;
-	glutCreateWindow("OpaintGL::Ongisnade 1.0");
+	glutCreateWindow("Canvas::OpaintGL - Ongisnade 1.1");
 	init(W, H);
 	glutDisplayFunc(DisplayFunc);
 	glutMouseFunc(MouseFunc);
