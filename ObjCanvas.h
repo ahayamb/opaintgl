@@ -1,9 +1,45 @@
 #include <stdio.h>
 #include <math.h>
 #include <vector>
+#include <stdlib.h>
+#include <string.h>
 #include <GL\gl.h>
 #include <GL\glut.h>
+#include <queue>
 using namespace std;
+
+#define RGB(r, g, b) ((((r)&0xFF)<<16) + (((g)&0xFF)<<8) + ((b)&0xFF))
+#define CEIL4(x) ((((x)+3)/4)*4)
+
+typedef unsigned short WORD;
+typedef unsigned long  DWORD;
+
+typedef struct tagBmpHeader
+{
+	DWORD sizeFile;
+	DWORD reserved;
+	DWORD offbits;
+	DWORD sizeStruct;
+	DWORD width, height;
+	WORD  planes;
+	WORD  bitCount;
+	DWORD compression;
+	DWORD sizeImage;
+	DWORD xPelsPerMeter;
+	DWORD yPelsPerMeter;
+	DWORD colorUsed;
+	DWORD colorImportant;
+} BmpHeader;
+
+
+typedef struct tagBitmap
+{
+	size_t width;
+	size_t height;
+	size_t size;
+	unsigned char *data;
+	bool misopen;
+} Bitmap;
 
 typedef struct t
 {
@@ -99,15 +135,126 @@ public:
 		a.SetEl(t);
 		b.SetEl(clr);
 		if (a == &b) return;
-		int xmin = x - 100 > 0 ? x - 100 : 0;
-		int xmax = x + 100 > Height ? Height - 1 : x + 100;
-		int ymin = y - 100 > 0 ? y - 100 : 0;
-		int ymax = y + 100 > Width ? Width - 1 : y + 100;
-		floodFill(x, y, clr, &a, xmin, xmax, ymin, ymax);
+		floodFill(x, y, clr, &a);
+	}
+
+	void SaveWork(char *filename)
+	{
+		Bitmap saved = {0};
+		newbmp(800, 600, &saved);
+		savebmp(filename, &saved);
 	}
 
 private:
+	int savebmp(char *fname, Bitmap *mbmp)
+	{
+		FILE *fp;
+		BmpHeader head = {0, 0, 54, 40, 0, 0, 1, 24, 0, 0}; /* BMP file header */
+
+		if ((fp = fopen(fname, "wb")) == NULL)
+		{
+			printf("Error: can't save to BMP file \"%s\".\n", fname);
+			return 1;
+		}
+
+		fputc('B', fp);
+		fputc('M', fp); /* write type */
+		/* fill BMP file header */
+		head.width = mbmp->width;
+		head.height = mbmp->height;
+		head.sizeImage = mbmp->size;
+		head.sizeFile = mbmp->size + head.offbits;
+		fwrite(&head, sizeof head, 1, fp); /* write header */
+		if (fwrite(mbmp->data, 1, mbmp->size, fp) != mbmp->size)
+		{
+			fclose(fp);
+			return 1; /* write bitmap infomation */
+		}
+
+		fclose(fp);
+		return 0;
+	}
+	int putpixel(int x, int y, int color, Bitmap *mbmp) //int putpixel(int x, int y, int color, Bitmap *mbmp)
+	{
+		unsigned char *p;
+
+		if (x < mbmp->width && y < mbmp->height)
+		{
+			p = mbmp->data + CEIL4(mbmp->width * 3) * y + x * 3;
+			p[0] = (unsigned char)(color & 0xff);
+			p[1] = (unsigned char)((color >> 8) & 0xff);
+			p[2] = (unsigned char)((color >> 16) & 0xff);
+			return 0;
+		}
+		return 1;
+	}
+	void closebmp(Bitmap *mbmp)
+	{
+		if (mbmp->misopen) /* clear bitmap */
+		{
+			mbmp->width = mbmp->height = 0;
+			if (mbmp->data != NULL)
+			{
+				free(mbmp->data);
+				mbmp->data = NULL;
+			}
+		}
+	}
+	int newbmp(int width, int height, Bitmap *mbmp)
+	{
+		if (width <= 0 || height <= 0)
+		{
+			printf("Width and height should be positve.\n");
+			return 1;
+		}
+
+		if (mbmp->misopen)
+			closebmp(mbmp);
+		mbmp->width = (size_t)width;
+		mbmp->height = (size_t)height;
+		mbmp->size = CEIL4(mbmp->width * 3) * mbmp->height;
+
+		if ((mbmp->data = (unsigned char*)malloc(mbmp->size)) == NULL)
+		{
+			printf("Error: alloc fail!");
+			return 1;
+		}
+
+		float *ret;
+		for (int i = 0; i < this->Height; i++)
+			for (int j = 0; j < this->Width; j++)
+			{
+				ret = Workspace[i][j].GetEl();
+				putpixel(i, j, RGB((int)(ret[0] * 255), (int)(ret[1] * 255), (int)(ret[2] * 255)), mbmp);
+			}
+
+		mbmp->misopen = 1;
+
+		return 0;
+	}
+
 	int Width, Height;
+	void floodFill(int x, int y, float clr[3], Pixel *ex)
+	{
+		dot tt;
+		queue<dot> waitingList;
+		tt.X = x; tt.Y = y;
+		waitingList.push(tt);
+		while(waitingList.size() > 0)
+		{
+			int xx = waitingList.front().X;
+			int yy = waitingList.front().Y;
+			if (xx >= 0 && xx < this->Height && yy >= 0 && this->Width && Workspace[xx][yy] == ex)
+			{
+				Workspace[xx][yy].SetEl(clr);
+				tt.X = xx + 1; tt.Y = yy; waitingList.push(tt);
+				tt.X = xx - 1; tt.Y = yy; waitingList.push(tt);
+				tt.X = xx; tt.Y = yy - 1; waitingList.push(tt);
+				tt.X = xx; tt.Y = yy + 1; waitingList.push(tt);
+			}
+			waitingList.pop();
+		}
+	}
 	void floodFill(int x, int y, float clr[3], Pixel *ex, int xmin, int xmax, int ymin, int ymax)
 	{
 		if (x >= xmin && x <= xmax && y >= ymin && y <= ymax && Workspace[x][y] == ex)
@@ -132,4 +279,3 @@ private:
 	}
 	vector< vector<Pixel> > Workspace;
 };
-

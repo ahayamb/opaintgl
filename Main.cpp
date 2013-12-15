@@ -1,5 +1,4 @@
 #include <windows.h>
-#include <string.h>
 #include "Objlib.h"
 
 /*
@@ -106,7 +105,7 @@ void ToolInformationBar()
 	glVertex2i(0, 630);
 	glEnd();
 	glColor3f(0,0,0);
-	char text[200];
+	char text[200] = "IDLE";
 	if (flagTool[1]) sprintf(text, "CURVE Selected | Curve(C), Select & Move (s), Resize(z), Rotate(r), Round(X), Square(S), Polyside(G), Freehand(F), Fill(f), Erase(e), Brush(b), Rasterize(q)");
 	else if (flagTool[2]) sprintf(text, "SELECT Selected | Curve(C), Select & Move (s), Resize(z), Rotate(r), Round(X), Square(S), Polyside(G), Freehand(F), Fill(f), Erase(e), Brush(b), Rasterize(q)");
 	else if (flagTool[3]) sprintf(text, "RESIZE Selected | Curve(C), Select & Move (s), Resize(z), Rotate(r), Round(X), Square(S), Polyside(G), Freehand(F), Fill(f), Erase(e), Brush(b), Rasterize(q)");
@@ -140,13 +139,21 @@ void DisplayFunc()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	ToolInformationBar();
-
 	if (workspace != NULL) workspace->DrawToScreen();
 
 	for (int i = 0; i < Objs.size(); i++)
 		if (Objs[i] != NULL) Objs[i]->Draw();
 	if (t != NULL) t->Draw();
+
+	ToolInformationBar();
+
+	for (int i = 0; i < Objs.size(); i++)
+		if (Objs[i] != NULL) printf("%d : %d\n", i, Objs[i]->Selected);
+	if (Objs.size() > 0)
+	{
+		printf("objs num %d\n", tcurrentIdx);
+		puts("\n");
+	}
 
 	glFlush();
 }
@@ -160,28 +167,33 @@ void MouseFunc(int button, int state, int x, int y)
 		Yinit = (600 - y + 30);
 		if (flagTool[1])
 		{
+			glutPostRedisplay();
 			if (t->isFinished())
 			{
 				Objs.push_back(t);
 				t = new Curve(r, g, b);
 			}
+			t->Selected = true;
 			t->AddPoint((float)x, (float)(600 - y + 30));
 			t->AddPoint((float)Xinit, (float)Yinit);
 			t->Evaluate();
 		}
 		else if (flagTool[2])
 		{
-			for (int i = 0; i < Objs.size(); i++)
+			for (int i = Objs.size() - 1; i >= 0; i--)
 			{
+				printf("%d %d\n", i, Objs[i]->Selected);
 				Objs[i]->CheckSelect((float)x, (float)(600 - y + 30));
+				printf("%d %d\n", i, Objs[i]->Selected);
 				if (Objs[i]->Selected)
 				{
 					tcurrent = Objs[i];
 					tcurrentIdx = i;
-					for (int j = i + 1; j < Objs.size(); j++) Objs[j]->Selected = false;
+					for (int j = i - 1; j >= 0; j--) Objs[j]->Selected = false;
 					break;
 				}
 				tcurrent = NULL;
+				tcurrentIdx = -1;
 			}
 			if (tcurrent != NULL) tcurrent->Selected = true;
 		}
@@ -198,6 +210,7 @@ void MouseFunc(int button, int state, int x, int y)
 			if (t != NULL)
 			{
 				t->Selected = false;
+				if (Objs.size() == 0 || Objs[Objs.size() - 1] != t)
 				Objs.push_back(t);
 				t = new Round(r, g, b);
 			}
@@ -207,6 +220,7 @@ void MouseFunc(int button, int state, int x, int y)
 			if (t != NULL)
 			{
 				t->Selected = false;
+				if (Objs.size() == 0 || Objs[Objs.size() - 1] != t)
 				Objs.push_back(t);
 				t = new Square(r, g, b);
 			}
@@ -216,6 +230,7 @@ void MouseFunc(int button, int state, int x, int y)
 			if (t != NULL)
 			{
 				t->Selected = false;
+				if (Objs.size() == 0 || Objs[Objs.size() - 1] != t)
 				Objs.push_back(t);
 				t = new Polyside(r, g, b);
 			}
@@ -225,6 +240,7 @@ void MouseFunc(int button, int state, int x, int y)
 			if (t != NULL)
 			{
 				t->Selected = false;
+				if (Objs.size() == 0 || Objs[Objs.size() - 1] != t)
 				Objs.push_back(t);
 				t = new Freehand(r, g, b);
 			}
@@ -348,12 +364,23 @@ void KeyboardFunc(unsigned char key, int x, int y)
 	if (key == 'C')
 	{
 		resetFlag(1);
+		glutPostRedisplay();
 		if (t != NULL)
 		{
 			t->Selected = false;
+			if (Objs.size() == 0 || Objs[Objs.size() - 1] != t)
 			Objs.push_back(t);
 		}
 		t = new Curve(r, g, b);
+	}
+	else if (key == 'L')
+	{
+		if (t != NULL && (Objs.size() == 0 || Objs[Objs.size() - 1] != t)) Objs.push_back(t);
+		t = new BitmapImg("Oke.bmp");
+		Objs.push_back(t);
+		tcurrent = Objs[Objs.size() - 1];
+		t = NULL;
+		glutPostRedisplay();
 	}
 	else if (key == 's')
 	{
@@ -361,6 +388,7 @@ void KeyboardFunc(unsigned char key, int x, int y)
 		if (t != NULL)
 		{
 			t->Selected = false;
+			if (Objs.size() == 0 || Objs[Objs.size() - 1] != t)
 			Objs.push_back(t);
 		}
 		glutPostRedisplay();
@@ -489,27 +517,30 @@ void KeyboardFunc(unsigned char key, int x, int y)
 	{
 		if (toolSize > 10) toolSize -= 10;
 	}
+	else if (key == ' ')
+	{
+		if (Objs.size() > 0)
+		{
+			Objs.erase(Objs.begin() + tcurrentIdx);
+			tcurrent = NULL;
+			t = NULL;
+			tcurrentIdx = -1;
+			glutPostRedisplay();
+		}
+	}
+	else if (key == 'W')
+	{
+		for (int i = 0; i < Objs.size(); i++)
+			Objs[i]->Rasterize(workspace);
+		workspace->SaveWork("FinalResult.bmp");
+		exit(0);
+	}
 }
 
 int main(int argc, char **argv)
 {
 	resetFlag(-1);
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA);
-	glutInitWindowPosition(80, 80);
-	glutInitWindowSize(W, H + 30);
-	float t[3] = {1,1,1};
-	workspace = new Canvas(H, W);
-	for (int i = 0; i < W; i++)
-		for (int j = 0; j < H; j++)
-			workspace->setPixelAt(i, j, t);
-	workspace->Modified = true;
-	glutCreateWindow("OpaintGL::Ongisnade 1.0");
-	init(W, H);
-	glutDisplayFunc(DisplayFunc);
-	glutMouseFunc(MouseFunc);
-	glutMotionFunc(MouseMoveFunc);
-	glutKeyboardFunc(KeyboardFunc);
 
 	//Displaying Color Picker
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA);
@@ -520,6 +551,21 @@ int main(int argc, char **argv)
 	glutDisplayFunc(ColorPicker);
 	glutMouseFunc(MouseFunc_ColorPicker);
 
+	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA);
+	glutInitWindowPosition(80, 80);
+	glutInitWindowSize(W, H + 30);
+	float aa[3] = {1,1,1};
+	workspace = new Canvas(H, W);
+	for (int i = 0; i < W; i++)
+		for (int j = 0; j < H; j++)
+			workspace->setPixelAt(i, j, aa);
+	workspace->Modified = true;
+	glutCreateWindow("OpaintGL::Ongisnade 1.0");
+	init(W, H);
+	glutDisplayFunc(DisplayFunc);
+	glutMouseFunc(MouseFunc);
+	glutMotionFunc(MouseMoveFunc);
+	glutKeyboardFunc(KeyboardFunc);
+
 	glutMainLoop();
 }
-

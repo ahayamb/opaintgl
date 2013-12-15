@@ -12,7 +12,7 @@ class Obj
 public:
 	bool Selected;
 	float Side;
-	void Rasterize(Canvas *t)
+	virtual void Rasterize(Canvas *t)
 	{
 		int cons = round(pointSize / 2.0);
 		for (int i = 0; i < mod.size(); i++)
@@ -25,14 +25,14 @@ public:
 	virtual void SetInitialPoint(float x, float y, float xt, float yt) {}
 	virtual void IncreaseSide() { }
 	virtual void DecreaseSide() { }
-	void IncreasePoint() { if (pointSize < 6) pointSize += 1.0; }
-	void DecreasePoint() { if (pointSize > 1) pointSize -= 1.0; }
-	void CheckSelect(float x, float y) //Processed point (x, W - y)
+	virtual void IncreasePoint() { if (pointSize < 6) pointSize += 1.0; } //nonvirtual
+	virtual void DecreasePoint() { if (pointSize > 1) pointSize -= 1.0; } //nonvirtual
+	virtual void CheckSelect(float x, float y) //Processed point (x, W - y) //nonvirtual
 	{
 		if (x <= xmax && x >= xmin && y <= ymax && y >= ymin) Selected = true;
 		else Selected = false;
 	}
-	void EditLastPoint(float x, float y) //Processed point (x, W - y)
+	virtual void EditLastPoint(float x, float y) //Processed point (x, W - y) //nonvirtual
 	{
 		if (ori.size() >= 2)
 		{
@@ -43,7 +43,7 @@ public:
 	}
 	virtual void SelectionDraw()
 	{
-		if (Selected)
+		if (Selected && ori.size() > 0)
 		{
 			if (!isRound)
 			{
@@ -102,7 +102,7 @@ public:
 			InitMod();
 		}
 	}
-	int EvaluatingResize(float x, float y) //Processed x, y
+	virtual int EvaluatingResize(float x, float y) //Processed x, y //nonvirtual
 	{
 		ResizePoint = 0;
 		if (xmin - 20 <= x && xmin + 20 >= x && ymin - 20 <= y && ymin + 20 >= y) ResizePoint = 1;
@@ -111,7 +111,7 @@ public:
 		else if (xmin - 20 <= x && xmin + 20 >= x && ymax - 20 <= y && ymax + 20 >= y) ResizePoint = 4;
 		return ResizePoint;
 	}
-	void Translate(float dx, float dy) //Processed dx, dy
+	virtual void Translate(float dx, float dy) //Processed dx, dy //nonvirtual
 	{
 		for (int i = 0; i < ori.size(); i++)
 		{
@@ -126,7 +126,7 @@ public:
 		xmin += dx; xmax += dx;
 		ymin += dy; ymax += dy;
 	}
-	void Rotate(float angle)
+	virtual void Rotate(float angle) //nonvirtual
 	{
 		float deg = angle * 3.14159265 / 180.0;
 
@@ -140,7 +140,7 @@ public:
 	}
 	float GetCenterX() { return (xmin + xmax) / 2; }
 	float GetCenterY() { return (ymin + ymax) / 2; }
-	void Resize(float x, float y) //Processed x, y
+	virtual void Resize(float x, float y) //Processed x, y //nonvirtual
 	{
 		float cx = 1, cy = 1, Cx, Cy;
 		if (ResizePoint == 1)
@@ -185,9 +185,13 @@ public:
 		}
 		InitMod();
 	}
-	bool isFinished() { return Finished; }
-	int isResizing() { return ResizePoint; }
+	virtual bool isFinished() { return Finished; } //nonvirtual
+	virtual int isResizing() { return ResizePoint; } //nonvirtual
 protected:
+	Bitmap bmImg;
+	unsigned char *getpixel(int x, int y, Bitmap *mbmp){}
+	void closebmp(Bitmap *mbmp) {}
+	int openbmp(char *fname, Bitmap *mbmp){}
 	virtual void InitMod(){ }
 	vector<dot> ori, mod;
 	float xmax, xmin, ymax, ymin;
@@ -548,3 +552,216 @@ private:
 	}
 };
 
+class BitmapImg : public Obj
+{
+public:
+	BitmapImg(char *fname)
+	{
+		pointSize = 1;
+		openbmp(fname, &bmImg);
+		xmin = 0;
+		xmax = xmin + bmImg.width * pointSize;
+		ymin = 0;
+		ymax = ymin + bmImg.height  * pointSize;
+		Finished = true;
+	}
+	bool Selected;
+	float Side;
+	void Rasterize(Canvas *t)
+	{
+		printf("Rasterize");
+		for (int i = 0; i < bmImg.width; i++)
+			for (int j = 0; j < bmImg.height; j++)
+			{
+				for (int x = pointSize * i + xmin; x <= pointSize * (i + 1) + xmin; x++)
+					for (int y = pointSize * j + ymin; y <= pointSize * (j + 1) + ymin; y++)
+					{
+						float c[3];
+						unsigned char *clr = getpixel(i, j, &bmImg);
+						c[0] = (float)clr[0] / 255.0;
+						c[1] = (float)clr[1] / 255.0;
+						c[2] = (float)clr[2] / 255.0;
+						t->setPixelAt(x, y, c);
+					}
+			}
+	}
+	void SetInitialPoint(float x, float y, float xt, float yt) {}
+	void IncreaseSide() { }
+	void DecreaseSide() { }
+	void IncreasePoint() { } //nonvirtual
+	void DecreasePoint() { } //nonvirtual
+	void EditLastPoint(float x, float y) //Processed point (x, W - y) //nonvirtual
+	{
+	}
+	void SelectionDraw()
+	{
+		if (Selected)
+		{
+			glPushAttrib(GL_ENABLE_BIT);
+			glLineStipple(1, 0xAAAA);
+			glEnable(GL_LINE_STIPPLE);
+			glColor3f(0, 0, 0);
+			glLineWidth(0.5);
+			glBegin(GL_LINE_LOOP);
+			glVertex2f(xmin, ymin);
+			glVertex2f(xmax, ymin);
+			glVertex2f(xmax, ymax);
+			glVertex2f(xmin, ymax);
+			glEnd();
+			glPopAttrib();
+			glColor3f(0, 0, 1);
+			glPointSize(10.0);
+			glBegin(GL_POINTS);
+			glVertex2f(xmin, ymin);
+			glVertex2f(xmax, ymin);
+			glVertex2f(xmax, ymax);
+			glVertex2f(xmin, ymax);
+			glEnd();
+		}
+	}
+	void Draw()
+	{
+		for (int x = 0; x < bmImg.width; x++)
+			for (int y = 0; y < bmImg.height; y++)
+			{
+				unsigned char *clr = getpixel(x, y, &bmImg);
+				glColor3f((float)clr[0] / 255.0, (float)clr[1] / 255.0, (float)clr[2] / 255.0);
+				glBegin(GL_QUADS);
+					glVertex2f(pointSize * x + xmin, pointSize * y + ymin);
+					glVertex2f(pointSize * (x + 1) + xmin, pointSize * y + ymin);
+					glVertex2f(pointSize * (x + 1) + xmin, pointSize * (y + 1) + ymin);
+					glVertex2f(pointSize * x + xmin, pointSize * (y + 1) + ymin);
+				glEnd();
+			}
+		SelectionDraw();
+	}
+	void AddPoint(float x, float y) { } //Processed point (x, W - y)
+	void Evaluate() { }
+	void EvaluatingFinish() { }
+	int EvaluatingResize(float x, float y) //Processed x, y //nonvirtual
+	{
+		ResizePoint = 0;
+		if (xmin - 20 <= x && xmin + 20 >= x && ymin - 20 <= y && ymin + 20 >= y) ResizePoint = 1;
+		else if (xmax - 20 <= x && xmax + 20 >= x && ymin - 20 <= y && ymin + 20 >= y) ResizePoint = 2;
+		else if (xmax - 20 <= x && xmax + 20 >= x && ymax - 20 <= y && ymax + 20 >= y) ResizePoint = 3;
+		else if (xmin - 20 <= x && xmin + 20 >= x && ymax - 20 <= y && ymax + 20 >= y) ResizePoint = 4;
+		return ResizePoint;
+	}
+	void Rotate(float angle) //nonvirtual
+	{
+
+	}
+	float GetCenterX() { return (xmin + xmax) / 2; }
+	float GetCenterY() { return (ymin + ymax) / 2; }
+	void Resize(float x, float y) //Processed x, y //nonvirtual
+	{
+		if (ResizePoint == 1)
+		{
+			pointSize = (xmax - x) / bmImg.width < (ymax - y) / bmImg.height ? (xmax - x) / bmImg.width : (ymax - y) / bmImg.height;
+			xmin = x;
+			ymin = y;
+			xmax = xmin + (float)bmImg.width * pointSize;
+			ymax = ymin + (float)bmImg.height * pointSize;
+		}
+		else if (ResizePoint == 2)
+		{
+
+		}
+		else if (ResizePoint == 3)
+		{
+		}
+		else if (ResizePoint == 4)
+		{
+		}
+	}
+	bool isFinished() { return Finished; } //nonvirtual
+	int isResizing() { return ResizePoint; } //nonvirtual
+private:
+	Bitmap bmImg;
+	void closebmp(Bitmap *mbmp)
+	{
+		if (mbmp->misopen)
+		{
+			mbmp->width = mbmp->height = 0;
+			if (mbmp->data != NULL)
+			{
+				free(mbmp->data);
+				mbmp->data = NULL;
+			}
+		}
+	}
+	int openbmp(char *fname, Bitmap *mbmp)
+	{
+		FILE *fp;
+		BmpHeader head = {0};
+
+		if ((fp = fopen(fname, "rb")) == NULL)
+		{
+			printf("Error: failed to open \"%s\".\n", fname);
+			return 1;
+		}
+
+		if (fgetc(fp) != 'B' || fgetc(fp) != 'M')
+		{
+			printf("Error: bmp file \"%s\" format error.", fname);
+			goto ERR_EXIT;
+		}
+
+		fread(&head, sizeof head, 1, fp);
+		if (head.sizeStruct != 40 || head.reserved != 0)
+		{
+			printf("Error: bmp file \"%s\" format error.", fname);
+			goto ERR_EXIT;
+		}
+
+		if (head.bitCount != 24)
+		{
+			printf("Sorry: bmp file \"%s\" bit count != 24", fname);
+			goto ERR_EXIT;
+		}
+
+		if (mbmp->misopen)
+			closebmp(mbmp);
+
+		mbmp->width = head.width;
+		mbmp->height = head.height;
+		mbmp->size = head.sizeImage;
+		if (mbmp->size != CEIL4(mbmp->width * 3) * mbmp->height)
+		{
+			printf("Error: bmp file \"%s\" size do not match!\n", fname);
+			goto ERR_EXIT;
+		}
+		if ((mbmp->data = (unsigned char*)realloc(mbmp->data, head.sizeImage)) == NULL)
+		{
+			printf("Error: alloc fail!");
+			goto ERR_EXIT;
+		}
+		if (fread(mbmp->data, 1, mbmp->size, fp) != mbmp->size)
+		{
+			printf("Error: read data fail!");
+			goto ERR_EXIT;
+		}
+
+		mbmp->misopen = 1;
+		fclose(fp);
+		return 0;
+
+	ERR_EXIT:
+		mbmp->misopen = 0;
+		fclose(fp);
+		return 1;
+	}
+
+	unsigned char *getpixel(int x, int y, Bitmap *mbmp)
+	{
+		unsigned char *p;
+
+		if (x < mbmp->width && y < mbmp->height)
+		{
+			p = mbmp->data + CEIL4(mbmp->width * 3) * y + x * 3;
+			unsigned char ret[3] = {p[2], p[0], p[1]};
+			return ret;
+		}
+		return 0;
+	}
+};
