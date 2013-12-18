@@ -4,17 +4,17 @@
 
 /*
 0 : isDragging
-1 : Curve (C)
-2 : Select tool & Move tool (s)
-3 : Resize (z)
-4 : Rotate (r)
-5 : Round tool (X)
-6 : Square (S)
-7 : Polyside (G)
-8 : Freehand (F)
-9 : Fill (f)
-10 : Erase (e)
-11 : Brush (b)
+1 : Curve (Shift + C)
+2 : Select tool & Move tool (S)
+3 : Resize (Z)
+4 : Rotate (R)
+5 : Round tool (Shift + X)
+6 : Square (Shift + S)
+7 : Polyside (Shift + G)
+8 : Freehand (Shift + F)
+9 : Fill (F)
+10 : Erase (E)
+11 : Brush (B)
 */
 
 vector<dot> Dots;
