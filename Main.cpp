@@ -148,10 +148,10 @@ void DisplayFunc()
 	ToolInformationBar();
 
 	for (int i = 0; i < Objs.size(); i++)
-		if (Objs[i] != NULL) printf("%d : %d\n", i, Objs[i]->Selected);
+		if (Objs[i] != NULL) //printf("%d : %d\n", i, Objs[i]->Selected);
 	if (Objs.size() > 0)
 	{
-		printf("objs num %d\n", tcurrentIdx);
+		//printf("objs num %d\n", tcurrentIdx);
 		puts("\n");
 	}
 
@@ -182,9 +182,9 @@ void MouseFunc(int button, int state, int x, int y)
 		{
 			for (int i = Objs.size() - 1; i >= 0; i--)
 			{
-				printf("%d %d\n", i, Objs[i]->Selected);
+				//printf("%d %d\n", i, Objs[i]->Selected);
 				Objs[i]->CheckSelect((float)x, (float)(600 - y + 30));
-				printf("%d %d\n", i, Objs[i]->Selected);
+				//printf("%d %d\n", i, Objs[i]->Selected);
 				if (Objs[i]->Selected)
 				{
 					tcurrent = Objs[i];
@@ -375,8 +375,11 @@ void KeyboardFunc(unsigned char key, int x, int y)
 	}
 	else if (key == 'L')
 	{
+		char fileName[100];
+		scanf("%[^\n]", fileName);
+		getchar();
 		if (t != NULL && (Objs.size() == 0 || Objs[Objs.size() - 1] != t)) Objs.push_back(t);
-		t = new BitmapImg("Oke.bmp");
+		t = new BitmapImg(fileName);
 		Objs.push_back(t);
 		tcurrent = Objs[Objs.size() - 1];
 		t = NULL;
