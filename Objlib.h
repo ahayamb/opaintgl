@@ -7,12 +7,13 @@
 using namespace std;
 
 //---------------------------------------------------------------------OBJ-------------------------------------------------------------------//
+//Kelas dasar yang menjadi interface bagi fungsi utama
 class Obj
 {
 public:
-	bool Selected;
+	bool Selected;	//variabel penanda apakah objek yang
 	float Side;
-	virtual void Rasterize(Canvas *t)
+	virtual void Rasterize(Canvas *t) //method yang digunakan untuk rasterisasi (mengubah ke domain piksel) objek
 	{
 		int cons = round(pointSize / 2.0);
 		for (int i = 0; i < mod.size(); i++)
@@ -23,16 +24,16 @@ public:
 		}
 	}
 	virtual void SetInitialPoint(float x, float y, float xt, float yt) {}
-	virtual void IncreaseSide() { }
-	virtual void DecreaseSide() { }
-	virtual void IncreasePoint() { if (pointSize < 6) pointSize += 1.0; } //nonvirtual
-	virtual void DecreasePoint() { if (pointSize > 1) pointSize -= 1.0; } //nonvirtual
-	virtual void CheckSelect(float x, float y) //Processed point (x, W - y) //nonvirtual
+	virtual void IncreaseSide() { } //method yang digunakan untuk menambah side (dioverride di kelas polyside)
+	virtual void DecreaseSide() { } //method yang digunakan untuk mengurangi side (dioverride di kelas polyside)
+	virtual void IncreasePoint() { if (pointSize < 6) pointSize += 1.0; } //nonvirtual, digunakan untuk menambah ketebalan garis objek
+	virtual void DecreasePoint() { if (pointSize > 1) pointSize -= 1.0; } //nonvirtual, digunakan untuk mengurangi ketebalan garis objek
+	virtual void CheckSelect(float x, float y) //Processed point (x, W - y) //nonvirtual, digunakan untuk mengecek apakah objek akan terseleksi atau tidak
 	{
 		if (x <= xmax && x >= xmin && y <= ymax && y >= ymin) Selected = true;
 		else Selected = false;
 	}
-	virtual void EditLastPoint(float x, float y) //Processed point (x, W - y) //nonvirtual
+	virtual void EditLastPoint(float x, float y) //Processed point (x, W - y), nonvirtual, method untuk mengedit titik terakhir dari objek. Digunakan sebagai akomodasi vektor yang bertipe private
 	{
 		if (ori.size() >= 2)
 		{
@@ -41,7 +42,7 @@ public:
 			InitMod();
 		}
 	}
-	virtual void SelectionDraw()
+	virtual void SelectionDraw() //digunakan untuk menggambar daerah seleksi objek
 	{
 		if (Selected && ori.size() > 0)
 		{
@@ -76,7 +77,7 @@ public:
 			glEnd();
 		}
 	}
-	virtual void Draw()
+	virtual void Draw()	//digunakan untuk menggambar objek
 	{
 		glColor3f(color[0], color[1], color[2]);
 		glLineWidth(pointSize + 1);
@@ -91,7 +92,7 @@ public:
 	}
 	virtual void AddPoint(float x, float y) { } //Processed point (x, W - y)
 	virtual void Evaluate() { }
-	virtual void EvaluatingFinish()
+	virtual void EvaluatingFinish() //digunakan untuk menyatukan titik awal dan titik akhir
 	{
 		if (ori.size() > 1 && ori[0].X <= ori[ori.size() - 1].X + 4 && ori[0].X >= ori[ori.size() - 1].X - 4 && ori[0].Y <= ori[ori.size() - 1].Y + 4 && ori[0].Y >= ori[ori.size() - 1].Y - 4)
 		{
@@ -102,7 +103,7 @@ public:
 			InitMod();
 		}
 	}
-	virtual int EvaluatingResize(float x, float y) //Processed x, y //nonvirtual
+	virtual int EvaluatingResize(float x, float y) //Processed x, y nonvirtual. Digunakan untuk memeriksa dari titik mana objek diseleksi
 	{
 		ResizePoint = 0;
 		if (xmin - 20 <= x && xmin + 20 >= x && ymin - 20 <= y && ymin + 20 >= y) ResizePoint = 1;
@@ -111,7 +112,7 @@ public:
 		else if (xmin - 20 <= x && xmin + 20 >= x && ymax - 20 <= y && ymax + 20 >= y) ResizePoint = 4;
 		return ResizePoint;
 	}
-	virtual void Translate(float dx, float dy) //Processed dx, dy //nonvirtual
+	virtual void Translate(float dx, float dy) //Processed dx, dy nonvirtual. Method untuk memindah objek
 	{
 		for (int i = 0; i < ori.size(); i++)
 		{
@@ -126,7 +127,7 @@ public:
 		xmin += dx; xmax += dx;
 		ymin += dy; ymax += dy;
 	}
-	virtual void Rotate(float angle) //nonvirtual
+	virtual void Rotate(float angle) //nonvirtual. Method untuk merotasi objek
 	{
 		float deg = angle * 3.14159265 / 180.0;
 
@@ -140,10 +141,10 @@ public:
 	}
 	float GetCenterX() { return (xmin + xmax) / 2; }
 	float GetCenterY() { return (ymin + ymax) / 2; }
-	virtual void Resize(float x, float y) //Processed x, y //nonvirtual
+	virtual void Resize(float x, float y) //Processed x, y nonvirtual. Method untuk merubah ukuran objek
 	{
 		float cx = 1, cy = 1, Cx, Cy;
-		if (ResizePoint == 1)
+		if (ResizePoint == 1)	//jika ukuran diubah dari titik sebelah kiri bawah
 		{
 			cx = (xmax - x) / (xmax - xmin);
 			cy = (ymax - y) / (ymax - ymin);
@@ -153,7 +154,7 @@ public:
 				ori[i].Y = ymax - (ymax - ori[i].Y) * cy;
 			}
 		}
-		else if (ResizePoint == 2)
+		else if (ResizePoint == 2)	//jika ukuran diubah dari titik sebelah kanan bawah
 		{
 			cx = (xmin - x) / (xmin - xmax);
 			cy = (ymax - y) / (ymax - ymin);
@@ -163,7 +164,7 @@ public:
 				ori[i].Y = ymax - (ymax - ori[i].Y) * cy;
 			}
 		}
-		else if (ResizePoint == 3)
+		else if (ResizePoint == 3) //jika ukuran diubah dari titik sebelah kanan atas
 		{
 			cx = (xmin - x) / (xmin - xmax);
 			cy = (ymin - y) / (ymin - ymax);
@@ -173,7 +174,7 @@ public:
 				ori[i].Y = (ori[i].Y - ymin) * cy + ymin;
 			}
 		}
-		else if (ResizePoint == 4)
+		else if (ResizePoint == 4) //jika ukuran diubah dari titik sebelah kiri atas
 		{
 			cx = (xmax - x) / (xmax - xmin);
 			cy = (ymin - y) / (ymin - ymax);
@@ -225,7 +226,7 @@ public:
 		pa.X = 0; pa.Y = 1; ori.push_back(pa);
 		pa.X = 0; pa.Y = 0; ori.push_back(pa);
 	}
-	void SetInitialPoint(float x, float y, float xt, float yt)
+	void SetInitialPoint(float x, float y, float xt, float yt)	//untuk kelas square, titik awal adalah 5 titik. Karena jika 4 titik, titik terakhir tidak tergambar
 	{
 		dot t;
 		float xs = x > xt ? x : xt;
@@ -284,7 +285,7 @@ public:
 		pointSize = 1.0;
 		isRound = true;
 	}
-	void SetInitialPoint(float x, float y, float xt, float yt)
+	void SetInitialPoint(float x, float y, float xt, float yt)	//Untuk kelas Round, titik awal adalah 360 titik yang didapatkan
 	{
 		ori.clear();
 		dot t;
@@ -352,7 +353,7 @@ public:
 		{
 			Side += 1.0;
 			ori.clear();
-		 	for (float i = 0; i <= 360; i += (360.0 / Side))
+		 	for (float i = 0; i <= 360; i += (360.0 / Side))	//banyak sisi
 			{
 				t.X = (xmax - xmin) / 2 * cos(i * 3.14 / 180.0) + GetCenterX();
 				t.Y = (ymax - ymin) / 2 * sin(i * 3.14 / 180.0) + GetCenterY();
@@ -417,7 +418,7 @@ private:
 			}
 			t += 0.01;
 		}
-		printf("%d\n", mod.size());
+		//printf("%d\n", mod.size());
 	}
 };
 
@@ -489,7 +490,7 @@ private:
 			t = 0;
 		}
 
-		printf("free %d\n", mod.size());
+		//printf("free %d\n", mod.size());
 	}
 };
 
@@ -577,7 +578,7 @@ public:
 	float Side;
 	void Rasterize(Canvas *t)
 	{
-		printf("Rasterize");
+		//printf("Rasterize");
 		for (int i = 0; i < bmImg.width; i++)
 			for (int j = 0; j < bmImg.height; j++)
 			{

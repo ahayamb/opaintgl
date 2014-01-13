@@ -14,6 +14,7 @@ using namespace std;
 typedef unsigned short WORD;
 typedef unsigned long  DWORD;
 
+//struktur header file bmp
 typedef struct tagBmpHeader
 {
 	DWORD sizeFile;
@@ -31,7 +32,7 @@ typedef struct tagBmpHeader
 	DWORD colorImportant;
 } BmpHeader;
 
-
+//struktur data file bmp
 typedef struct tagBitmap
 {
 	size_t width;
@@ -46,6 +47,7 @@ typedef struct t
 	float X, Y;
 }dot;
 
+//struktur data piksel
 class Pixel
 {
 public:
@@ -88,6 +90,7 @@ private:
 	float Clr[3];
 };
 
+//struktur data kanvas, kanvas adalah kumpulan dari objek2 piksel
 class Canvas
 {
 public:
@@ -96,6 +99,7 @@ public:
 	int getWidth() { return Width; }
 	int getHeight() { return Height; }
 	bool Modified;
+	//method yang dipanggil di fungsi gambar utama
 	void DrawToScreen()
 	{
 		glPointSize(1.0);
@@ -111,7 +115,9 @@ public:
 			}
 		Modified = false;
 	}
+	//method yang digunakan untuk mendapatkan nilai RGB dari suatu titik di kanvas
 	float *getPixelAt(int i, int j) { return Workspace[i][j].GetEl(); }
+	//method yang digunakan untuk mengeset nilai RGB dari suatu titik di kanvas
 	void setPixelAt(int i, int j, float clr[3])
 	{
 		float in[3];
@@ -120,13 +126,16 @@ public:
 		in[2] = clr[2];
 		if (i >= 0 && i < Height && j >= 0 && j < Width) Workspace[i][j].SetEl(in);
 	}
+	//method untuk mengatur titik kanvas menjadi putih
 	void resetAt(int i, int j) { Workspace[i][j].Reset(); }
+	//method untuk mengatur titik kanvas menjadi putih
 	void eraseAt(int x, int y, int erSize)
 	{
 		for (int i = x - erSize / 2; i >= 0 && i < Height && i <= x + erSize / 2; i++)
 			for (int j = y - erSize / 2; j >= 0 && j <= y + erSize / 2; j++)
 				Workspace[i][j].Reset();
 	}
+	//method untuk mengatur titik kanvas menjadi warna yang diinginkan
 	void fillAt(int x, int y, float clr[3])
 	{
 		y = Width - y;
@@ -137,7 +146,7 @@ public:
 		if (a == &b) return;
 		floodFill(x, y, clr, &a);
 	}
-
+	//method interface untuk menyimpan gambar di window utama ke dalam format bmp
 	void SaveWork(char *filename)
 	{
 		Bitmap saved = {0};
@@ -146,6 +155,7 @@ public:
 	}
 
 private:
+	//method untuk menyimpan gambar di window utama
 	int savebmp(char *fname, Bitmap *mbmp)
 	{
 		FILE *fp;
