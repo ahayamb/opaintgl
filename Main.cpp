@@ -2,21 +2,20 @@
 #include "Objlib.h"
 
 /*
+Shortcut pemilihan toolbox
 0 : isDragging
-1 : Curve (C)
-2 : Select tool & Move tool (s)
-3 : Resize (z)
-4 : Rotate (r)
-5 : Round tool (X)
-6 : Square (S)
-7 : Polyside (G)
-8 : Freehand (F)
-9 : Fill (f)
-10 : Erase (e)
-11 : Brush (b)
+1 : Curve (Shift + C)
+2 : Select tool & Move tool (S)
+3 : Resize (Z)
+4 : Rotate (R)
+5 : Round tool (Shift + X)
+6 : Square (Shift + S)
+7 : Polyside (Shift + G)
+8 : Freehand (Shift + F)
+9 : Fill (F)
+10 : Erase (E)
+11 : Brush (B)
 */
-
-//vector<dot> Dots;
 
 int W = 800, H = 600, toolSize = 20, tcurrentIdx = -1;
 Obj *t, *tcurrent;
@@ -43,14 +42,14 @@ void resetFlag(int idx)
 	if (idx >= 0) flagTool[idx] = true;
 }
 
-//Mengatur window color picker
+// Mengatur window color picker
 void init_ColorPicker(void)
 {
 	glClearColor( 1, 1, 1, 1);
 	glClearDepth( 1.0 );
 	gluOrtho2D(0, 290, -20, 260);
 }
-//Menampilkan status bar tentang tool apa yang sekarang aktif
+// Menampilkan status bar tentang tool apa yang sekarang aktif
 void text()
 {
 	char text[32];
@@ -99,7 +98,7 @@ void ColorPicker()
 
 int posTool = 0;
 int Xtool = -1, Ytool = -1;
-//Interface untuk operasi klik pada window toolbox (pengaktifan tool)
+// Interface untuk operasi klik pada window toolbox (pengaktifan tool)
 void toolBoxMouse(int button, int state, int x, int y)
 {
 	y = 300 - y;
@@ -240,7 +239,7 @@ void drawToolBox()
 	glFlush();
 }
 
-//Fungsi mouse untuk memilih warna pada jendela color picker, warna yang dipilih akan menjadi warna default untuk penggambaran bangun dan region filling
+// Fungsi mouse untuk memilih warna pada jendela color picker, warna yang dipilih akan menjadi warna default untuk penggambaran bangun dan region filling
 void MouseFunc_ColorPicker(int button, int state, int x, int y)
 {
 	if (state == GLUT_DOWN)
@@ -259,7 +258,7 @@ void MouseFunc_ColorPicker(int button, int state, int x, int y)
 	}
 }
 //-----------------------------------------------------------------------------------------------------------------------------
-//Fungsi untuk menampilkan active tool toolbar
+// Fungsi untuk menampilkan active tool toolbar
 void ToolInformationBar()
 {
 	glColor3f(0.1, 1, 1);
@@ -391,7 +390,7 @@ void MouseFunc(int button, int state, int x, int y)
 		{
 			if(tcurrent != NULL) tcurrent->EvaluatingResize((float)x, (float)(600 - y + 30));
 		}
-		//Kondisi yang digunakan untuk menggambar lingkaran
+		// Kondisi yang digunakan untuk menggambar lingkaran
 		else if (flagTool[5])
 		{
 			if (t != NULL)
@@ -402,7 +401,7 @@ void MouseFunc(int button, int state, int x, int y)
 				t = new Round(r, g, b);
 			}
 		}
-		//Kondisi yang digunakan untuk menggambar kotak
+		// Kondisi yang digunakan untuk menggambar kotak
 		else if (flagTool[6])
 		{
 			if (t != NULL)
@@ -413,7 +412,7 @@ void MouseFunc(int button, int state, int x, int y)
 				t = new Square(r, g, b);
 			}
 		}
-		//Kondisi yang digunakan untuk menggambar segi banyak, dengan jumlah segi asli = 3, dan maksimal 10
+		// Kondisi yang digunakan untuk menggambar segi banyak, dengan jumlah segi asli = 3, dan maksimal 10
 		else if (flagTool[7])
 		{
 			if (t != NULL)
@@ -424,7 +423,7 @@ void MouseFunc(int button, int state, int x, int y)
 				t = new Polyside(r, g, b);
 			}
 		}
-		//Kondisi yang digunakan untuk menggambar garis bebas
+		// Kondisi yang digunakan untuk menggambar garis bebas
 		else if (flagTool[8])
 		{
 			if (t != NULL)
@@ -435,16 +434,16 @@ void MouseFunc(int button, int state, int x, int y)
 				t = new Freehand(r, g, b);
 			}
 		}
-		//Kondisi yang digunakan untuk melakukan region filling daerah di domain piksel
+		// Kondisi yang digunakan untuk melakukan region filling daerah di domain piksel
 		else if (flagTool[9])
 		{
 			float t[3];
 			t[0] = r; t[1] = g; t[2] = b;
 			workspace->fillAt(x, y - 30, t);
 		}
-		//Kondisi yang digunakan untuk melakukan penghapusan daerah di domain piksel
+		// Kondisi yang digunakan untuk melakukan penghapusan daerah di domain piksel
 		else if (flagTool[10]) workspace->eraseAt(x, 600 - y + 30, toolSize);
-		//Kondisi yang digunakan untuk melakukan penggambaran brush di domain piksel
+		// Kondisi yang digunakan untuk melakukan penggambaran brush di domain piksel
 		else if (flagTool[11])
 		{
 			float t[3];
@@ -453,7 +452,7 @@ void MouseFunc(int button, int state, int x, int y)
 				workspace->setPixelAt(rand() % toolSize + x - toolSize / 2, rand() % toolSize + 600 - y + 30 - toolSize / 2, t);
 		}
 	}
-	//Kondisi ketika klik mouse dilepas
+	// Kondisi ketika klik mouse dilepas
 	else if (state == GLUT_UP && button == GLUT_LEFT_BUTTON)
 	{
 		flagTool[0] = false;
@@ -479,7 +478,7 @@ void MouseMoveFunc(int x, int y)
 			t->EditLastPoint(x, 600 - y + 30);
 			glutPostRedisplay();
 		}
-		//Kondisi yang menangani perpindahan objek
+		// Kondisi yang menangani perpindahan objek
 		else if (flagTool[2])
 		{
 			if (tcurrent != NULL)
@@ -490,7 +489,7 @@ void MouseMoveFunc(int x, int y)
 				glutPostRedisplay();
 			}
 		}
-		//Kondisi yang menangani pengubahan ukuran objek
+		// Kondisi yang menangani pengubahan ukuran objek
 		else if (flagTool[3])
 		{
 			if (tcurrent != NULL && tcurrent->isResizing())
@@ -499,7 +498,7 @@ void MouseMoveFunc(int x, int y)
 				glutPostRedisplay();
 			}
 		}
-		//Kondisi yang menangani perputaran objek
+		// Kondisi yang menangani perputaran objek
 		else if (flagTool[4])
 		{
 			if (tcurrent != NULL)
@@ -525,40 +524,40 @@ void MouseMoveFunc(int x, int y)
 				}
 			}
 		}
-		//KOndisi yang berasosiasi dengan penggambaran lingkaran
+		// KOndisi yang berasosiasi dengan penggambaran lingkaran
 		else if (flagTool[5])
 		{
 			if (Xinit != x && 600 - y + 30 != Yinit)
 				t->SetInitialPoint(Xinit, Yinit, x, 600 - y + 30);
 			glutPostRedisplay();
 		}
-		//Kondisi yang berasosiasi dengan penggambaran kotak
+		// Kondisi yang berasosiasi dengan penggambaran kotak
 		else if (flagTool[6])
 		{
 			if (Xinit != x && 600 - y + 30 != Yinit)
 				t->SetInitialPoint(Xinit, Yinit, x, 600 - y + 30);
 			glutPostRedisplay();
 		}
-		//Kondisi yang berasosiasi dengan penggambaran segi banyak
+		// Kondisi yang berasosiasi dengan penggambaran segi banyak
 		else if (flagTool[7])
 		{
 			if (Xinit != x && 600 - y + 30 != Yinit)
 				t->SetInitialPoint(Xinit, Yinit, x, 600 - y + 30);
 			glutPostRedisplay();
 		}
-		//Kondisi yang berasosiasi dengan freehand tool, setiap perpindahan mouse akan ditambahkan titik baru pada objek freehand
+		// Kondisi yang berasosiasi dengan freehand tool, setiap perpindahan mouse akan ditambahkan titik baru pada objek freehand
 		else if (flagTool[8])
 		{
 			t->AddPoint(x, 600 - y + 30);
 			glutPostRedisplay();
 		}
-		//KOndisi yang berasosiasi dengan penghapusan objek pada domain piksel
+		// KOndisi yang berasosiasi dengan penghapusan objek pada domain piksel
 		else if (flagTool[10])
 		{
 			workspace->eraseAt(x, 600 - y + 30, toolSize);
 			glutPostRedisplay();
 		}
-		//Kondisi yang berasosiasi dengan penggambaran kuas pada domain piksel
+		// Kondisi yang berasosiasi dengan penggambaran kuas pada domain piksel
 		else if (flagTool[11])
 		{
 			float t[3];
@@ -570,10 +569,10 @@ void MouseMoveFunc(int x, int y)
 	}
 }
 
-//Fungsi keyboard yang mengatur tentang jalan pintas perpindahan tool satu ke tool yang lain
+// Fungsi keyboard yang mengatur tentang jalan pintas perpindahan tool satu ke tool yang lain
 void KeyboardFunc(unsigned char key, int x, int y)
 {
-	//Untuk mengkatifkan curve tool
+	// Untuk mengkatifkan curve tool
 	if (key == 'C')
 	{
 		resetFlag(1);
@@ -589,7 +588,7 @@ void KeyboardFunc(unsigned char key, int x, int y)
 		}
 		t = new Curve(r, g, b);
 	}
-	//Untuk menambahkan gambar berformat .bmp ke dalam window utama
+	// Untuk menambahkan gambar berformat .bmp ke dalam window utama
 	else if (key == 'L')
 	{
 		char fileName[100];
@@ -602,7 +601,7 @@ void KeyboardFunc(unsigned char key, int x, int y)
 		t = NULL;
 		glutPostRedisplay();
 	}
-	//Untuk mengkatifkan tool select & move
+	// Untuk mengkatifkan tool select & move
 	else if (key == 's')
 	{
 		resetFlag(2);
@@ -617,8 +616,8 @@ void KeyboardFunc(unsigned char key, int x, int y)
 		}
 		glutPostRedisplay();
 	}
-	//Untuk mengaktifkan resize tool
-	else if (key == 'z') //Resize tool
+	// Untuk mengaktifkan resize tool
+	else if (key == 'z') // Resize tool
 	{
 		resetFlag(3);
 		Ytool = 0;
@@ -628,7 +627,7 @@ void KeyboardFunc(unsigned char key, int x, int y)
 		if(tcurrent != NULL) tcurrent->Selected = true;
 		glutPostRedisplay();
 	}
-	//Untuk mengkatifkan rotate tool
+	// Untuk mengkatifkan rotate tool
 	else if (key == 'r')
 	{
 		resetFlag(4);
@@ -639,21 +638,21 @@ void KeyboardFunc(unsigned char key, int x, int y)
 		if(tcurrent != NULL) tcurrent->Selected = true;
 		glutPostRedisplay();
 	}
-	//Untuk menambah ketebalan garis
+	// Untuk menambah ketebalan garis
 	else if (key == '+')
 	{
 		if(tcurrent != NULL) tcurrent->IncreasePoint();
 		else if (t != NULL) t->IncreasePoint();
 		glutPostRedisplay();
 	}
-	//Untuk mengurangi ketebalan garis
+	// Untuk mengurangi ketebalan garis
 	else if (key == '-')
 	{
 		if(tcurrent != NULL) tcurrent->DecreasePoint();
 		else if (t != NULL) t->DecreasePoint();
 		glutPostRedisplay();
 	}
-	//Untuk mengatifkan tool gambar lingkaran
+	// Untuk mengatifkan tool gambar lingkaran
 	else if (key == 'X')
 	{
 		resetFlag(5);
@@ -668,7 +667,7 @@ void KeyboardFunc(unsigned char key, int x, int y)
 		t = new Round(r, g, b);
 		glutPostRedisplay();
 	}
-	//Untuk mengaktifkan tool gambar kotak
+	// Untuk mengaktifkan tool gambar kotak
 	else if (key == 'S')
 	{
 		resetFlag(6);
@@ -683,7 +682,7 @@ void KeyboardFunc(unsigned char key, int x, int y)
 		t = new Square(r, g, b);
 		glutPostRedisplay();
 	}
-	//Untuk mengaktifkan tool gambar sisi banyak
+	// Untuk mengaktifkan tool gambar sisi banyak
 	else if (key == 'G')
 	{
 		resetFlag(7);
@@ -698,7 +697,7 @@ void KeyboardFunc(unsigned char key, int x, int y)
 		t = new Polyside(r, g, b);
 		glutPostRedisplay();
 	}
-	//Untuk mengaktifkan tool gambar tangan bebas
+	// Untuk mengaktifkan tool gambar tangan bebas
 	else if (key == 'F')
 	{
 		resetFlag(8);
@@ -713,7 +712,7 @@ void KeyboardFunc(unsigned char key, int x, int y)
 		t = new Freehand(r, g, b);
 		glutPostRedisplay();
 	}
-	//Untuk mengaktifkan tool region filling
+	// Untuk mengaktifkan tool region filling
 	else if (key == 'f')
 	{
 		resetFlag(9);
@@ -724,7 +723,7 @@ void KeyboardFunc(unsigned char key, int x, int y)
 		if(tcurrent != NULL) tcurrent->Selected = true;
 		glutPostRedisplay();
 	}
-	//Untuk mengaktifkan tool hapus
+	// Untuk mengaktifkan tool hapus
 	else if (key == 'e')
 	{
 		resetFlag(10);
@@ -732,7 +731,7 @@ void KeyboardFunc(unsigned char key, int x, int y)
 		if(tcurrent != NULL) tcurrent->Selected = true;
 		glutPostRedisplay();
 	}
-	//Untuk mengaktifkan brush tool
+	// Untuk mengaktifkan brush tool
 	else if (key == 'b')
 	{
 		resetFlag(11);
@@ -743,7 +742,7 @@ void KeyboardFunc(unsigned char key, int x, int y)
 		if(tcurrent != NULL) tcurrent->Selected = true;
 		glutPostRedisplay();
 	}
-	//Untuk rasterisasi objek gambar, sehingga objek gambar akan berada di domain piksel
+	// Untuk rasterisasi objek gambar, sehingga objek gambar akan berada di domain piksel
 	else if (key == 'q')
 	{
 		if(tcurrent != NULL)
@@ -757,31 +756,31 @@ void KeyboardFunc(unsigned char key, int x, int y)
 		}
 		glutPostRedisplay();
 	}
-	//Untuk menambah jumlah sisi dari objek polyside
+	// Untuk menambah jumlah sisi dari objek polyside
 	else if (key == '>')
 	{
 		if(tcurrent != NULL) tcurrent->IncreaseSide();
 		else if (t != NULL) t->IncreaseSide();
 		glutPostRedisplay();
 	}
-	//Untuk mengurangi jumlah sisi dari objek polyside
+	// Untuk mengurangi jumlah sisi dari objek polyside
 	else if (key == '<')
 	{
 		if(tcurrent != NULL) tcurrent->DecreaseSide();
 		else if (t != NULL) t->DecreaseSide();
 		glutPostRedisplay();
 	}
-	//Untuk memperbesar ukuran dari brush dan erase tool
+	// Untuk memperbesar ukuran dari brush dan erase tool
 	else if (key == '[')
 	{
 		if (toolSize < 80) toolSize += 10;
 	}
-	//Untuk mengecilkan ukuran dari brush dan erase tool
+	// Untuk mengecilkan ukuran dari brush dan erase tool
 	else if (key == ']')
 	{
 		if (toolSize > 10) toolSize -= 10;
 	}
-	//Untuk menghapus objek yang dipilih
+	// Untuk menghapus objek yang dipilih
 	else if (key == ' ')
 	{
 		if (Objs.size() > 0)
@@ -793,7 +792,7 @@ void KeyboardFunc(unsigned char key, int x, int y)
 			glutPostRedisplay();
 		}
 	}
-	//Untuk keluar dari program dan menyimpan gambar ke dalam format .bmp
+	// Untuk keluar dari program dan menyimpan gambar ke dalam format .bmp
 	else if (key == 'W')
 	{
 		for (int i = 0; i < Objs.size(); i++)
@@ -809,7 +808,7 @@ int main(int argc, char **argv)
 	glutInit(&argc, argv);
 	tp = new BitmapImg("toolbox.bmp");
 
-	//Displaying toolbox
+	// Displaying toolbox
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA);
 	glutInitWindowPosition(0, 0);
 	glutInitWindowSize(100, 300);
@@ -818,7 +817,7 @@ int main(int argc, char **argv)
 	glutDisplayFunc(drawToolBox);
 	glutMouseFunc(toolBoxMouse);
 
-	//Displaying Color Picker
+	// Displaying Color Picker
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA);
 	glutInitWindowPosition(100 + W, 80);
 	glutInitWindowSize(290, 276);
@@ -832,7 +831,7 @@ int main(int argc, char **argv)
 	glutInitWindowSize(W, H + 30);
 
 	float aa[3] = {1,1,1};
-	//mengatur objek kanvas (domain piksel) menjadi berwarna putih
+	// mengatur objek kanvas (domain piksel) menjadi berwarna putih
 	workspace = new Canvas(H, W);
 	for (int i = 0; i < W; i++)
 		for (int j = 0; j < H; j++)
