@@ -3,18 +3,24 @@
 
 /*
 Shortcut pemilihan toolbox
-0 : isDragging
-1 : Curve (Shift + C)
-2 : Select tool & Move tool (S)
-3 : Resize (Z)
-4 : Rotate (R)
-5 : Round tool (Shift + X)
-6 : Square (Shift + S)
-7 : Polyside (Shift + G)
-8 : Freehand (Shift + F)
-9 : Fill (F)
-10 : Erase (E)
-11 : Brush (B)
+-	1 : Curve ( C )
+-	2 : Select tool & Move tool (S)
+-	3 : Resize (z)
+-	4 : Rotate (r)
+-	5 : Round tool (X)
+-	6 : Square (S)
+-	7 : Polyside (G)
+-	8 : Freehand (F)
+-	9 : Fill (f)
+-	10 : Erase (e)
+-	11 : Brush (b)
+-	Menambah ketebalan garis (+)
+-	Mengurangi ketebalan garis (-)
+-	Menambah jumlah sisi untuk polyside (>)
+-	Mengurangi jumlah sisi untuk polyside (<)
+-	Memperbesar ukuran brush & erase ( [ )
+-	Mengurangi ukuran brush & erase ( ] )
+-	Rasterize objek gambar ( q )
 */
 
 int W = 800, H = 600, toolSize = 20, tcurrentIdx = -1;
@@ -162,15 +168,11 @@ void toolBoxMouse(int button, int state, int x, int y)
 			}
 			t = new Round(r, g, b);
 		}
-		else if (posTool == 4)
+		else if (posTool == 1)
 		{
-			resetFlag(6);
-			if (t != NULL)
-			{
-				t->Selected = false;
-				Objs.push_back(t);
-			}
-			t = new Square(r, g, b);
+			resetFlag(10);
+			if (t != NULL) Objs.push_back(t);
+			if(tcurrent != NULL) tcurrent->Selected = true;
 		}
 		else if (posTool == 2)
 		{
@@ -227,7 +229,6 @@ void drawToolBox()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColor4f(1, 1, 1, 0.5);
 	glBegin(GL_POLYGON);
-	printf("%d %d\n", Xtool, Ytool);
 	if (Xtool != -1 && Ytool != -1)
 	{
 		glVertex2f( (Xtool) * 50 + 5, (Ytool) * 50 + 5 );
@@ -312,15 +313,6 @@ void DisplayFunc()
 	if (t != NULL) t->Draw();
 
 	ToolInformationBar();
-
-	for (int i = 0; i < Objs.size(); i++)
-		if (Objs[i] != NULL) //printf("%d : %d\n", i, Objs[i]->Selected);
-	if (Objs.size() > 0)
-	{
-		//printf("objs num %d\n", tcurrentIdx);
-		//puts("\n");
-	}
-
 	glFlush();
 }
 
