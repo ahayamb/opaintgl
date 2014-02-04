@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <vector>
-#include <GL\gl.h>
-#include <GL\glut.h>
+#include <GL/gl.h>
+#include <GL/glut.h>
 using namespace std;
 
 typedef struct t
